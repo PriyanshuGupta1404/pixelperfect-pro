@@ -63,25 +63,6 @@ The application will be available at http://localhost:5173.
 
 - Once you are finished, configure your export settings and click "Download Image".
 
-## 🗂️ Folder Structure
-
-```bash
-pixelperfect-pro/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── App.jsx
-│   ├── index.css
-│   └── main.jsx
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.js
-├── README.md
-├── tailwind.config.js
-└── vite.config.js
-```
-
 ## 📬 Contact
 
 - 🔗 GitHub: [@PriyanshuGupta1404](https://github.com/priyanshugupta1404)
