@@ -1,99 +1,89 @@
-PixelPerfect Pro - Web-Based Image Editor
-PixelPerfect Pro is a modern, feature-rich, browser-based image editing application built with React and Tailwind CSS. It provides a suite of tools for easy image manipulation, from basic adjustments to advanced transformations, all with a sleek, dark-themed interface.
+# 🤖 PixelPerfect Pro - Web-Based Image Editor
 
-Features
-Real-Time Editing: All edits are applied instantly to the image on the canvas.
+A modern, feature-rich, browser-based image editing application built with React and Tailwind CSS. It provides a suite of tools for easy image manipulation, from basic adjustments to advanced transformations, all with a sleek, dark-themed interface.
 
-Transform Tools: Rotate and flip images with a single click.
+## 🚀 Features
 
-Interactive Cropping: A simple and intuitive drag-to-select crop tool.
+- Real-Time Editing: All edits are applied instantly to the image on the canvas.
 
-Color Adjustments: Sliders for brightness, contrast, saturation, and blur.
+- Transform Tools: Rotate and flip images with a single click.
 
-Advanced Filters: Apply effects like grayscale, sepia, invert, and hue rotation.
+- Interactive Cropping: A simple and intuitive drag-to-select crop tool.
 
-Watermarking: Add custom text to your images with controls for size, color, and position (including drag-and-drop).
+- Color Adjustments & Filters: Sliders for brightness, contrast, saturation, blur, grayscale, and more.
 
-Advanced Compression: Control JPEG quality with presets and a live-updating estimated file size.
+- Watermarking: Add custom text to your images with controls for size, color, and position (including drag-and-drop).
 
-History System: Unlimited undo and redo for all editing actions.
+- Advanced Compression: Control JPEG quality with presets and a live-updating estimated file size.
 
-File Support: Upload images from your local machine and export them as JPEG, PNG, or WEBP.
+- History System: Unlimited undo and redo for all editing actions.
 
-Tech Stack
-Framework: React.js (with Vite)
+## 🛠️ Tech Stack
 
-Styling: Tailwind CSS
+- Frontend: React.js (with Vite)
 
-Icons: Lucide React
+- Styling: Tailwind CSS
 
-File Saving: FileSaver.js
+- Icons: Lucide React
 
-Project Setup Instructions
+- File Handling: FileSaver.js
+
+## ⬇️ Installation
+
 Follow these steps to get the project running on your local machine.
 
-Prerequisites
+1. Clone the repository:
 
-Node.js (version 14 or higher)
-
-npm or yarn package manager
-
-1. Create a New Vite Project
-
-Open your terminal and run the following command to create a new React project with Vite.
-
-npm create vite@latest pixelperfect-pro -- --template react
-
-2. Navigate into the Project Directory
-
+```
+git clone https://github.com/PriyanshuGupta1404/pixelperfect-pro.git
 cd pixelperfect-pro
+```
 
-3. Install Project Dependencies
+2. Install dependencies:
 
-Install the required libraries for the project.
+```
+npm install
+```
 
-npm install lucide-react file-saver
+3. Run the Development Server:
 
-4. Install Tailwind CSS
-
-Install Tailwind CSS and its peer dependencies, then generate the configuration files.
-
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-
-5. Configure Tailwind CSS
-
-Open the tailwind.config.js file and replace its content with the following to enable Tailwind to scan your React components for class names.
-
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-
-6. Add Tailwind Directives
-
-Open the src/index.css file, remove all of its existing content, and add the following lines:
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-7. Replace the App Component Code
-
-Open the src/App.jsx file, delete all of its content, and paste in the complete code from the "Main App Component" in your Canvas.
-
-8. Run the Development Server
-
-You are now ready to start the project. Run the following command in your terminal:
-
+```
 npm run dev
+```
 
-This will start the Vite development server, and you can view your application by navigating to the local URL provided in the terminal (usually http://localhost:5173).
+The application will be available at http://localhost:5173.
 
+## 🧠 Usage
+
+- Drag and drop an image file onto the main workspace or use the "Browse Files" button.
+
+- Use the tools on the left-hand toolbar to select an editing mode (Adjust, Crop, Text).
+
+- Modify the image using the controls in the panel that appears.
+
+- Once you are finished, configure your export settings and click "Download Image".
+
+## 🗂️ Folder Structure
+
+```bash
+pixelperfect-pro/
+├── public/
+│   └── vite.svg
+├── src/
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .gitignore
+├── index.html
+├── package.json
+├── postcss.config.js
+├── README.md
+├── tailwind.config.js
+└── vite.config.js
+```
+
+## 📬 Contact
+
+- 🔗 GitHub: [@PriyanshuGupta1404](https://github.com/priyanshugupta1404)
+- 🧑‍💻 LinkedIn: [@PriyanshuGupta1404](https://linkedin.com/in/priyanshugupta0551)
+- 📩 Email: priyanshugupta1404@gmail.com
