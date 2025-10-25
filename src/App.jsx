@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Wand2,
   Github,
@@ -46,7 +46,7 @@ const Section = ({ title, children, isOpen, onToggle }) => (
         }`}
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        viewBox="0 0 24"
       >
         <path
           strokeLinecap="round"
@@ -496,7 +496,6 @@ const ExportControls = ({
   quality,
   onStateUpdate,
   imageName,
-  estimatedSize,
 }) => {
   const selectClasses =
     "w-full bg-gray-700 border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition";
@@ -568,14 +567,6 @@ const ExportControls = ({
               className="w-full accent-indigo-500"
             />
           </div>
-          {estimatedSize && (
-            <div className="text-center bg-gray-800 p-2 rounded-md">
-              <p className="text-sm text-gray-300">
-                Estimated Size:{" "}
-                <strong className="text-indigo-400">{estimatedSize}</strong>
-              </p>
-            </div>
-          )}
         </div>
       )}
       <button
@@ -596,7 +587,6 @@ const ControlPanel = ({
   imageName,
   applyCrop,
   cancelCrop,
-  estimatedSize,
 }) => {
   const [openSections, setOpenSections] = useState({
     transform: true,
@@ -671,7 +661,6 @@ const ControlPanel = ({
           quality={state.quality}
           onStateUpdate={updateState}
           imageName={imageName}
-          estimatedSize={estimatedSize}
         />
       </div>
     </aside>
@@ -690,8 +679,6 @@ const App = () => {
 
   // Editing state
   const [crop, setCrop] = useState(null);
-  const [estimatedSize, setEstimatedSize] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [state, setState] = useState({
     quality: 0.9,
     format: "image/jpeg",
@@ -719,21 +706,17 @@ const App = () => {
   });
 
   const canvasRef = useRef(null);
-  const imageRef = useRef(new Image());
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
   }, []);
 
-  const addToHistory = useCallback(
-    (newImage, newState) => {
-      const newHistory = history.slice(0, historyIndex + 1);
-      newHistory.push({ image: newImage, state: newState });
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-    },
-    [history, historyIndex]
-  );
+  const addToHistory = (newImage, newState) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push({ image: newImage, state: newState });
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
 
   const updateState = (key, value, record = true) => {
     setState((prevState) => {
@@ -763,25 +746,39 @@ const App = () => {
     }
   };
 
-  const redrawCanvas = useCallback(() => {
-    if (!image) return;
-    setIsProcessing(true);
+  const redrawCanvas = () => {
+    if (!image || !canvasRef.current) return;
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const img = imageRef.current;
+    const img = new Image();
+
     img.onload = () => {
+      // This logic is from the old `applyTransformations`
       const rad = (state.rotation * Math.PI) / 180;
       const cos = Math.abs(Math.cos(rad));
       const sin = Math.abs(Math.sin(rad));
-      canvas.width = img.naturalWidth * cos + img.naturalHeight * sin;
-      canvas.height = img.naturalWidth * sin + img.naturalHeight * cos;
+
+      const newWidth = img.naturalWidth * cos + img.naturalHeight * sin;
+      const newHeight = img.naturalWidth * sin + img.naturalHeight * cos;
+
+      if (canvas.width !== newWidth) canvas.width = newWidth;
+      if (canvas.height !== newHeight) canvas.height = newHeight;
+
       ctx.save();
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate(rad);
       ctx.scale(state.flip.h ? -1 : 1, state.flip.v ? -1 : 1);
-      ctx.filter = `brightness(${state.filters.brightness}%) contrast(${state.filters.contrast}%) saturate(${state.filters.saturate}%) grayscale(${state.filters.grayscale}%) sepia(${state.filters.sepia}%) invert(${state.filters.invert}%) hue-rotate(${state.filters.hueRotate}deg) blur(${state.filters.blur}px)`;
+
+      const filterString = `brightness(${state.filters.brightness}%) contrast(${state.filters.contrast}%) saturate(${state.filters.saturate}%) grayscale(${state.filters.grayscale}%) sepia(${state.filters.sepia}%) invert(${state.filters.invert}%) hue-rotate(${state.filters.hueRotate}deg) blur(${state.filters.blur}px)`;
+
+      if (ctx.filter !== filterString) {
+        ctx.filter = filterString;
+      }
+
       ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
       ctx.restore();
+
       if (state.text.visible) {
         ctx.fillStyle = state.text.color;
         ctx.font = `${state.text.size}px ${state.text.font}`;
@@ -789,44 +786,22 @@ const App = () => {
         ctx.textBaseline = "middle";
         ctx.fillText(state.text.content, state.text.x, state.text.y);
       }
-      setIsProcessing(false);
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load image for canvas");
     };
     img.crossOrigin = "Anonymous";
     img.src = image;
-  }, [image, state]);
+  };
 
   useEffect(() => {
-    const debounce = setTimeout(() => redrawCanvas(), 200);
-    return () => clearTimeout(debounce);
-  }, [redrawCanvas]);
-
-  // This calculates the estimated file size for the export panel
-  useEffect(() => {
-    if (!image || !canvasRef.current || state.format !== "image/jpeg") {
-      setEstimatedSize("");
-      return;
+    // This is a simpler implementation without debouncing.
+    // It will be less performant but is easier to understand.
+    if (image) {
+      redrawCanvas();
     }
-
-    const estimate = setTimeout(() => {
-      canvasRef.current.toBlob(
-        (blob) => {
-          if (blob) {
-            const sizeInKB = blob.size / 1024;
-            const sizeInMB = sizeInKB / 1024;
-            const formattedSize =
-              sizeInMB >= 1
-                ? `${sizeInMB.toFixed(2)} MB`
-                : `${sizeInKB.toFixed(1)} KB`;
-            setEstimatedSize(formattedSize);
-          }
-        },
-        "image/jpeg",
-        state.quality
-      );
-    }, 500);
-
-    return () => clearTimeout(estimate);
-  }, [image, state.quality, state.format, isProcessing]);
+  }, [image, state]); // Redraw when image or state changes
 
   const loadImage = (file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -889,16 +864,14 @@ const App = () => {
   };
 
   const confirmCrop = () => {
-    if (!crop || !canvasRef.current || !imageRef.current) return;
+    if (!crop || !canvasRef.current) return;
     const canvas = canvasRef.current;
 
-    const scaleX = canvas.width / canvas.clientWidth;
-    const scaleY = canvas.height / canvas.clientHeight;
-
-    const cropX = crop.x * scaleX;
-    const cropY = crop.y * scaleY;
-    const cropWidth = crop.width * scaleX;
-    const cropHeight = crop.height * scaleY;
+    // Use crop values directly as they are already in canvas coords
+    const cropX = crop.x;
+    const cropY = crop.y;
+    const cropWidth = crop.width;
+    const cropHeight = crop.height;
 
     if (cropWidth <= 0 || cropHeight <= 0) {
       resetCrop();
@@ -923,12 +896,24 @@ const App = () => {
     );
 
     const newImage = cropCanvas.toDataURL(state.format);
-    setImage(newImage);
-    // Reset rotation and flip after crop, as they are now "baked in"
-    const newState = { ...state, rotation: 0, flip: { h: false, v: false } };
-    setState(newState);
-    addToHistory(newImage, newState);
-    resetCrop();
+    const img = new Image();
+    img.onload = () => {
+      const newState = {
+        ...state,
+        rotation: 0,
+        flip: { h: false, v: false },
+        text: {
+          ...state.text,
+          x: img.naturalWidth / 2,
+          y: img.naturalHeight / 2,
+        },
+      };
+      setImage(newImage);
+      setState(newState);
+      addToHistory(newImage, newState);
+      resetCrop();
+    };
+    img.src = newImage;
   };
 
   const resetCrop = () => {
@@ -954,7 +939,6 @@ const App = () => {
           imageName={imageName}
           applyCrop={confirmCrop}
           cancelCrop={resetCrop}
-          estimatedSize={estimatedSize}
         />
         <Workspace
           image={image}
